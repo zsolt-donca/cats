@@ -332,6 +332,21 @@ import simulacrum.typeclass
     }.toList
 
   /**
+    * Left associative fold on `F` using the function `f`; produces a list containing
+    * cumulative results of applying the function.
+    */
+  def scanLeft_[A, B](fa: F[A], b: B)(f: (B, A) => B): List[B] = {
+    foldLeft(fa, List(b))((lb, a) => f(lb.head, a) :: lb)
+  }
+
+  /**
+    * Left associative monadic folding on `F`; produces a list containing cumulative results
+    * of applying the monadic function.
+    */
+  def scanM_[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): List[G[B]] =
+    foldLeft(fa, List(G.pure(z)))((list, a) => G.flatMap(list.head)(f(_, a)) :: list).reverse
+
+  /**
    * Returns true if there are no elements. Otherwise false.
    */
   def isEmpty[A](fa: F[A]): Boolean =
